@@ -11,6 +11,13 @@ export const login = {
     })
 }
 
+export const confirmEmail = {
+    body: z.strictObject({
+        email: generalFields.email,
+        otp: generalFields.otp
+    })
+}
+
 
 export const signup = {
     body: login.body.extend({
@@ -32,5 +39,11 @@ export const signup = {
                 })
             }
         }
+    })
+}
+
+export const signUpWithGmail = {
+    body: z.strictObject({
+        idToken: z.string()
     })
 }

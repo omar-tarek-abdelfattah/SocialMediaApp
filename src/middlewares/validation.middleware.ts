@@ -6,7 +6,8 @@ export const generalFields = {
     username: z.string().min(3).max(25),
     email: z.email(),
     password: z.string().regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}/),
-    confirmPassword: z.string()
+    confirmPassword: z.string(),
+    otp: z.string().regex(/^\d{6}$/)
 }
 
 

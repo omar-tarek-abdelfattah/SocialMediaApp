@@ -6,6 +6,7 @@ config({ path: resolve('./config/.env.development') })
 // load express & types
 import type { Request, Express, Response } from 'express';
 import authController from './modules/Auth/auth.controller'
+import userController from './modules/User/user.controller'
 import express from 'express';
 
 // third party middleware
@@ -13,6 +14,7 @@ import cors from 'cors'
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit'
 import { globalErrorHandling } from './utils/response/error.response.js';
+import connectDB from './DB/connection.db';
 
 const limiter = rateLimit({
     windowMs: 60 * 60000,
@@ -31,6 +33,9 @@ const bootstrap = (): void => {
     app.use(limiter)
     app.use(express.json(), cors(), helmet())
 
+    // DB connection
+    connectDB()
+
     // app routing
 
     app.get('/', (req: Request, res: Response) => {
@@ -38,6 +43,7 @@ const bootstrap = (): void => {
     })
     // sub-app-routing modules
     app.use('/auth', authController)
+    app.use('/user', userController)
     // app.use('/users')
 
 

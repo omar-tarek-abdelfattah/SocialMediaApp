@@ -7,7 +7,8 @@ exports.generalFields = {
     username: zod_1.z.string().min(3).max(25),
     email: zod_1.z.email(),
     password: zod_1.z.string().regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}/),
-    confirmPassword: zod_1.z.string()
+    confirmPassword: zod_1.z.string(),
+    otp: zod_1.z.string().regex(/^\d{6}$/)
 };
 const validation = (schema) => {
     return (req, res, next) => {
