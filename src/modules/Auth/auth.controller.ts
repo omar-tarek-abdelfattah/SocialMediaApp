@@ -18,6 +18,13 @@ router.post(`/login-gmail`, validation(validators.signUpWithGmail), authService.
 
 router.patch(`/confirm-email`, validation(validators.confirmEmail), authService.confrmEmail)
 
+router.patch('/send-reset-password', validation(validators.sendForgotCode), authService.sendForgotCode)
+router.patch('/reset-password', validation(validators.resetPassword), authService.resetPassword)
+
+
+
+// endpoint to verify enabling 2fa
+router.patch('/verify-2fa', validation(validators.verify2fa), authService.verify2fa)
 
 
 export default router

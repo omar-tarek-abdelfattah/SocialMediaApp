@@ -5,16 +5,20 @@ config({ path: resolve('./config/.env.development') })
 
 // load express & types
 import type { Request, Express, Response } from 'express';
-import authController from './modules/Auth/auth.controller'
-import userController from './modules/User/user.controller'
+import { authController, userController, postController } from './modules'
 import express from 'express';
 
 // third party middleware
 import cors from 'cors'
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit'
-import { globalErrorHandling } from './utils/response/error.response.js';
+import { BadRequestException, globalErrorHandling } from './utils/response/error.response.js';
 import connectDB from './DB/connection.db';
+import { createGetPreSignedUploadLink, getFile } from './utils/multer/s3.config';
+
+import { promisify } from 'node:util'
+import { pipeline } from 'node:stream'
+const createS3WriteStreamPipe = promisify(pipeline)
 
 const limiter = rateLimit({
     windowMs: 60 * 60000,
@@ -44,6 +48,42 @@ const bootstrap = (): void => {
     // sub-app-routing modules
     app.use('/auth', authController)
     app.use('/user', userController)
+    app.use('/post', postController)
+
+    app.get("/upload/pre-signed/*path", async (req: Request, res: Response): Promise<Response> => {
+        const { downloadName, download = "false" } = req.query as {
+            downloadName?: string,
+            download?: string
+        }
+        const { path } = req.params as unknown as { path: string[] }
+
+        const Key = path.join("/")
+        const url = await createGetPreSignedUploadLink({ Key, download, downloadName: downloadName as string })
+
+        return res.json({ message: 'done', data: url })
+
+
+    })
+    app.get("/upload/*path", async (req: Request, res: Response): Promise<void> => {
+        const { downloadName, download = "false" } = req.query as {
+            downloadName?: string,
+            download?: string
+        }
+        const { path } = req.params as unknown as { path: string[] }
+
+        const Key = path.join("/")
+        const s3Response = await getFile({ Key })
+
+        if (!s3Response?.Body) {
+            throw new BadRequestException("fail to fetch this asset")
+        }
+        if (download == "true") {
+            res.setHeader("Content-Disposition", `attachment; filename="${downloadName || Key.split('/').pop()}"`)
+        }
+
+        res.setHeader("Content-type", `${s3Response.ContentType}`)
+        return await createS3WriteStreamPipe(s3Response.Body as NodeJS.ReadableStream, res)
+    })
     // app.use('/users')
 
 

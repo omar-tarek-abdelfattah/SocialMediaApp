@@ -47,3 +47,24 @@ export const signUpWithGmail = {
         idToken: z.string()
     })
 }
+export const resetPassword = {
+    body: z.strictObject({
+        email: generalFields.email,
+        otp: generalFields.otp,
+        password: generalFields.password,
+        confirmPassword: generalFields.confirmPassword
+    }).refine((data) => {
+        return data.password === data.confirmPassword
+    }, { message: `password mismatches confirmPassword`, path: [`confirmPassword`] })
+}
+export const sendForgotCode = {
+    body: z.strictObject({
+        email: generalFields.email
+    })
+}
+export const verify2fa = {
+    body: z.strictObject({
+        email: generalFields.email,
+        otp: generalFields.otp
+    })
+}
